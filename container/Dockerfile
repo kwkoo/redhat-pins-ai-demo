@@ -1,54 +1,64 @@
 # Use an official Python runtime as a parent image
-FROM quay.io/hgeaydem/ubi9-jp6-pytorch:pytorch-2.1.0
-#FROM fedora:38
+
+FROM nvcr.io/nvidia/cuda:12.3.1-devel-ubi9
+
+RUN \
+  yum update -y \
+  && \
+  yum install -y python3-pip git mesa-libGL libjpeg libpng libjpeg-devel libpng-devel python3-devel \
+  && \
+  yum clean all
+
+RUN \
+  pip3 install torch==2.1.0 'opencv-python-headless>=4.1.1' flask
 
 # Set the working directory to /app
 
 WORKDIR /app
 
-RUN rm -fr ~/.cache/pip
-
-# Install any dependencies you may need (e.g., OpenCV)
-#RUN dnf install -y python3-pip python3-devel mesa-libGL git gcc g++ libjpeg libpng libjpeg-devel libpng-devel v4l-utils libv4l conda
-RUN git clone https://github.com/ultralytics/yolov5
-RUN git config --global --add safe.directory /app/yolov5
-RUN pip install websockets flask-socketio dill  torchvision==0.16
-RUN sed -i 's/opencv-python/opencv-python-headless/g' yolov5/requirements.txt &&  sed -i 's/torch/#torch/g' yolov5/requirements.txt &&  pip install -r yolov5/requirements.txt
-RUN curl -OL  https://github.com/redhat-ai-edge-pins-demo/pins-model/raw/main/pins.pt
-
 # Copy the current directory contents into the container at /app
 ADD video.mp4 /app/
 ADD templates /app/templates
 ADD static /app/static
-COPY app.py /app/
-COPY pins.pt /app/
+ADD yolov5 /app/yolov5
 
-RUN curl -OL  https://github.com/redhat-ai-edge-pins-demo/pins-model/raw/main/pins.pt
-
-ENV CONDA_EXE=/opt/conda/bin/conda
-ENV CONDA_PREFIX=/opt/conda
-ENV CONDA_DIR=/opt/conda
-ENV CONDA_PYTHON_EXE=/opt/conda/bin/python
-ENV PATH=/opt/conda/bin:/opt/conda/condabin:/root/.local/bin:/root/bin:/usr/share/Modules/bin:/opt/conda/bin:/usr/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Install any dependencies you may need (e.g., OpenCV)
+#RUN dnf install -y python3-pip python3-devel mesa-libGL git gcc g++ libjpeg libpng libjpeg-devel libpng-devel v4l-utils libv4l conda
+#RUN git clone https://github.com/ultralytics/yolov5
+#RUN git config --global --add safe.directory /app/yolov5
+RUN \
+  pip3 install \
+    websockets \
+    flask-socketio \
+    dill \
+    torchvision==0.16 \
+    paho-mqtt \
+  && \
+  sed -i 's/opencv-python/opencv-python-headless/g' yolov5/requirements.txt \
+  &&  \
+  sed -i 's/torch/#torch/g' yolov5/requirements.txt \
+  && \
+  pip3 install -r yolov5/requirements.txt \
+  && \
+  rm -fr ~/.cache/pip
 
 ENV MANPATH=/usr/share/man:
-ENV CUDA_PATH=/usr/cuda
+ENV CUDA_PATH=/usr/local/cuda
 ENV MODULES_RUN_QUARANTINE="LD_LIBRARY_PATH LD_PRELOAD"
-ENV LD_LIBRARY_PATH=/lib/usr/cuda/lib64:
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/lib/python3.9/site-packages/nvidia/cudnn/lib
 ENV PATH=/opt/conda/bin:/opt/conda/condabin:/root/.local/bin:/root/bin:/usr/share/Modules/bin:/opt/conda/bin:/usr/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV MODULEPATH=/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles
 
-ENV CUDA_DIR=/usr/cuda
-ENV CUDA_PATH=/usr/cuda
-ENV CUDA_INSTALL_DIR=/usr/cuda
-ENV CUDA_HOME=/usr/cuda
+ENV CUDA_DIR=/usr/local/cuda
+ENV CUDA_PATH=/usr/local/cuda
+ENV CUDA_INSTALL_DIR=/usr/local/cuda
+ENV CUDA_HOME=/usr/local/cuda
 
 ENV NVIDIA_VISIBLE_DEVICES=all
-
-ENV SERVER_FQDN="orin.lab.local"
 
 # Define the default command to run when the container starts
 CMD ["/app/app.py"]
 ENTRYPOINT ["python3"]
 
-
+COPY best.pt /app/
+COPY app.py /app/
