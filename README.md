@@ -8,21 +8,19 @@ This repo contains a git submodule (`container/yolov5`) so don't forget to clone
 
 ## Demo
 
-The following steps show how you would run the Red Hat Pins web app on a local docker instance using an RTSP server as a video source.
+To run the demo, execute the following
 
-01. Start [mediamtx](https://github.com/bluenviron/mediamtx) - this will serve as the RTSP server
+	docker compose up
 
-		make mediamtx
+This will start 3 containers:
 
-01. Start streaming the sample video through mediamtx - open a new terminal and enter the following
+01. `mediamtx` - this will serve as the RTSP server
 
-		make ffmpeg
+01. `ffmpeg` - this streams the sample video (`container/video.mp4`) to `mediamtx`
 
-01. Start the Red Hat Pins web application - open a new terminal and enter the following
+01. `pins` - this is the Red Hat pins web application; it is configured to use `mediamtx` as a video source via the `VIDEO` environment variable
 
-		make run
-
-	This points the application to the RTSP server by setting the `VIDEO` environment variable
+Once all 3 containers are up, access the pins with a web browser at <http://localhost:8080>
 
 
 ## Running on OpenShift

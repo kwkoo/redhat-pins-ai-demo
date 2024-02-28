@@ -1,0 +1,35 @@
+version: "3.5"
+
+services:
+
+  pins:
+    container_name: pins
+    image: "ghcr.io/kwkoo/rhpins"
+    ports:
+    - 8080:5000
+    environment:
+    - VIDEO=rtsp://mediamtx:8554/mystream
+    depends_on:
+    - ffmpeg
+
+  mediamtx:
+    container_name: mediamtx
+    image: "bluenviron/mediamtx:latest-ffmpeg"
+    ports:
+    - 8554:8554
+    environment:
+    - MTX_PROTOCOLS=tcp
+
+  ffmpeg:
+    container_name: ffmpeg
+    image: "bluenviron/mediamtx:latest-ffmpeg"
+    entrypoint:
+    - /bin/sh
+    - "-c"
+    - "until nc mediamtx 8554 < /dev/null; do sleep 5; done; ffmpeg -re -stream_loop -1 -i /host/video.mp4 -c copy -f rtsp rtsp://mediamtx:8554/mystream"
+    environment:
+    - MTX_PROTOCOLS=tcp
+    volumes:
+    - ./container/video.mp4:/host/video.mp4:ro
+    depends_on:
+    - mediamtx
