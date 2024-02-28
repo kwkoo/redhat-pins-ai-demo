@@ -30,27 +30,32 @@ model = torch.hub.load('yolov5', 'custom', path='best.pt', source='local').to(de
 
 def get_video_frames():
     if cv2.VideoCapture(1).isOpened():
-        cap = cv2.VideoCapture(1)
+        video_source = 1
+        cap = cv2.VideoCapture(video_source)
     elif cv2.VideoCapture(0).isOpened():
-        cap = cv2.VideoCapture(0)
-    elif cv2.VideoCapture('video.mp4').isOpened():
-        cap = cv2.VideoCapture('video.mp4')
+        video_source = 0
+        cap = cv2.VideoCapture(video_source)
     else:
-        sys.exit()
+        video_source = os.environ.get('VIDEO', 'video.mp4')
+        print("Video source is set to %s" % video_source)
+        cap = cv2.VideoCapture(video_source)
 
     fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_counter = 0
+    print("Video FPS %d" % fps)
+    retry_pause = False
 
     while True:
         ret, frame = cap.read()
-        frame_counter += 1
-
-        if frame_counter == cap.get(cv2.CAP_PROP_FRAME_COUNT):
-            frame_counter = 0
-            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         if not ret:
-            sys.exit()
+            print("Video source did not return a frame")
+            cap.open(video_source)
+            if retry_pause:
+                time.sleep(2)
+            else:
+                retry_pause = True
+            continue
 
+        retry_pause = False
         resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
         results = model(resized)
 
