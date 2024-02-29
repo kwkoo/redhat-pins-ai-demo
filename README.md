@@ -41,6 +41,7 @@ sequenceDiagram
 	participant P as RedHatPins
 	end
 	F->>M: .mp4 over RTSP
+	P->>M: request for RTSP stream
 	M->>P: .mp4 over RTSP
 	P->>P: inferencing
 	P->>B: image
