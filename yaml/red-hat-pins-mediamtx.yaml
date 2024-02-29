@@ -19,9 +19,9 @@ spec:
       - name: rh-pins
         image: ghcr.io/kwkoo/rhpins
         imagePullPolicy: IfNotPresent
-        #env:
-        #- name: VIDEO
-        #  value: rtsp://0.tcp.ap.ngrok.io:19233/mystream
+        env:
+        - name: VIDEO
+          value: rtsp://mediamtx:8554/mystream
         ports:
         - containerPort: 5000
           name: http
@@ -60,3 +60,44 @@ spec:
     weight: 100
   wildcardPolicy: None
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mediamtx
+  name: mediamtx
+spec:
+  selector:
+    matchLabels:
+      app: mediamtx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mediamtx
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mediamtx
+        image: bluenviron/mediamtx:latest-ffmpeg
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MTX_PROTOCOLS
+          value: tcp
+        ports:
+        - containerPort: 8554
+          name: rtsp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mediamtx
+  labels:
+    app: mediamtx
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8554
+    name: rtsp
+  selector:
+    app: mediamtx
