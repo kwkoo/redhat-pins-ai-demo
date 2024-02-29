@@ -30,6 +30,22 @@ A sample manifest is located in [`yaml/red-hat-pins.yaml`](yaml/red-hat-pins.yam
 
 ### Deploying Red Hat Pins and mediamtx on OpenShift
 
+```mermaid
+sequenceDiagram
+	box Laptop
+	participant F as ffmpeg
+	participant B as browser
+	end
+	box OpenShift
+	participant M as mediamtx
+	participant P as RedHatPins
+	end
+	F->>M: .mp4 over RTSP
+	M->>P: .mp4 over RTSP
+	P->>P: inferencing
+	P->>B: image
+```
+
 To deploy the Red Hat Pins web application with mediamtx on OpenShift,
 
 01. Create a new project
