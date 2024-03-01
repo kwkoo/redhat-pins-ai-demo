@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: training
+  name: training
+spec:
+  selector:
+    matchLabels:
+      app: training
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: training
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: rh-pins
+        image: ghcr.io/kwkoo/yolov8
+        imagePullPolicy: IfNotPresent
+        command: ["tail", "-f", "/dev/null"]
+        workingDir: /datasets
+        env:
+        - name: HOME
+          value: /datasets
+        volumeMounts:
+        - name: data
+          mountPath: /datasets
+        - name: dshm
+          mountPath: /dev/shm
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      volumes:
+      - name: data
+        emptyDir: {}
+      - name: dshm
+        emptyDir: {}
+---

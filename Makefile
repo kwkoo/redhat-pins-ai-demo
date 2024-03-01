@@ -3,7 +3,7 @@ BUILDERNAME=multiarch-builder
 
 BASE:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-.PHONY: run image mediamtx ffmpeg
+.PHONY: run image mediamtx ffmpeg image-training
 
 run:
 	docker run \
@@ -57,3 +57,10 @@ ffmpeg:
 	  -w /host \
 	  mediamtx \
 	  ffmpeg -re -stream_loop -1 -i video.mp4 -c copy -f rtsp rtsp://localhost:8554/mystream
+
+image-training:
+	docker build \
+	  --push \
+	  --rm \
+	  -t ghcr.io/kwkoo/yolov8 \
+	  $(BASE)/training-image
