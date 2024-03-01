@@ -10,7 +10,7 @@ run:
 	  --name pins \
 	  --rm \
 	  -it \
-	  -p 8080:5000 \
+	  -p 8080:8080 \
 	  -e VIDEO="rtsp://`ifconfig en0 | grep 'inet ' | awk '{ print $$2 }'`:8554/mystream" \
 	  $(IMAGE)
 
@@ -19,7 +19,8 @@ run-standalone:
 	  --name pins \
 	  --rm \
 	  -it \
-	  -p 8080:5000 \
+	  -p 8080:8080 \
+	  -e CAMERA=video.mp4 \
 	  --entrypoint /bin/bash \
 	  $(IMAGE)
 

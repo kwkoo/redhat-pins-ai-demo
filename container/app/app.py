@@ -28,14 +28,15 @@ def stop_detection_task():
     background_thread.join()
     logging.info("background thread exited cleanly")
 
-def detection_task(
-        camera_device,
-        confidence):
-
+def detection_task(camera_device):
     retry = 10
     logging.info("loading model...")
     model = YOLO('best.pt')
     logging.info("done loading model")
+
+    max_paint_leak_ids = 10
+    paint_leak_ids = []
+    total_paint_leaks = 0
 
     cam = cv2.VideoCapture(camera_device)
     retry_pause = False
@@ -52,9 +53,28 @@ def detection_task(
             continue
 
         retry_pause = False
-        results = model(frame, conf=confidence)
+        results = model.track(frame, persist=True)
         if len(results) < 1:
             continue
+
+        result = results[0]
+        if result.boxes.id is not None:
+            cls = result.boxes.cls.numpy().astype(int)
+            ids = result.boxes.id.numpy().astype(int)
+            for idx, cl in enumerate(cls):
+                if cl == 1:
+                    leak_id = ids[idx]
+                    known_id = False
+                    for id in paint_leak_ids:
+                        if id == leak_id:
+                            known_id = True
+                            break
+                    if not known_id:
+                        total_paint_leaks = total_paint_leaks + 1
+                        print(f"paint leak id = {leak_id}")
+                        paint_leak_ids.append(leak_id)
+                        if len(paint_leak_ids) > max_paint_leak_ids:
+                            paint_leak_ids.pop(0)
 
         output_frame = results[0].plot()
 
@@ -63,7 +83,8 @@ def detection_task(
         im_b64 = base64.b64encode(im_encoded.tobytes()).decode('ascii')
 
         message = {
-            "image": im_b64
+            "image": im_b64,
+            "leaks": total_paint_leaks
         }
         announcer.announce(format_sse(data=json.dumps(message), event="image", retry=retry))
 
@@ -112,13 +133,6 @@ if __name__ == '__main__':
         logging.info("CUDA is not available")
 
     camera_device = os.getenv('CAMERA', '/dev/video0')
-    confidence = os.getenv('CONFIDENCE', '0.5')
-
-    try:
-        confidence = float(confidence)
-    except ValueError:
-        print("CONFIDENCE is not a number")
-        sys.exit(1)
 
     announcer = MessageAnnouncer()
 
@@ -127,9 +141,7 @@ if __name__ == '__main__':
         continue_running.set()
         background_thread = threading.Thread(
             target=detection_task,
-            args=(
-                camera_device,
-                confidence))
+            args=(camera_device,))
         background_thread.start()
 
     app.run(host='0.0.0.0', port=8080)

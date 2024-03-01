@@ -24,7 +24,7 @@ WORKDIR /app
 EXPOSE 8080
 
 RUN \
-  pip3 install flask \
+  pip3 install flask lapx \
   && \
   rm -rf /root/.cache
 
@@ -38,8 +38,7 @@ ENV \
   CUDA_HOME=/usr/local/cuda \
   NVIDIA_VISIBLE_DEVICES=all \
   HOME=/app \
-  CAMERA=/dev/video0 \
-  CONFIDENCE=0.3
+  CAMERA=/dev/video0
 
 COPY video.mp4 /app/
 COPY best.pt /app/

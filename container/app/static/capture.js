@@ -5,6 +5,7 @@
   
     function startup() {
       photo = document.getElementById('photo');
+      leaks = document.getElementById('leaks');
       clearphoto();
 
       const evtSource = new EventSource("/listen");
@@ -12,8 +13,13 @@
         sseErrors = 0;
         if (event == null || event.data == null) return;
         var body = JSON.parse(event.data);
-        if (body != null && body.image != null) {
+        if (body != null) {
+          if (body.image != null) {
             photo.setAttribute('src', 'data:image/jpeg;charset=utf-8;base64,' + body.image);
+          }
+          if (body.leaks != null) {
+            leaks.innerText = body.leaks;
+          }
         }
       });
       evtSource.onerror = (e) => {
