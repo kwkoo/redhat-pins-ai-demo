@@ -14,6 +14,15 @@ run:
 	  -e VIDEO="rtsp://`ifconfig en0 | grep 'inet ' | awk '{ print $$2 }'`:8554/mystream" \
 	  $(IMAGE)
 
+run-standalone:
+	docker run \
+	  --name pins \
+	  --rm \
+	  -it \
+	  -p 8080:5000 \
+	  --entrypoint /bin/bash \
+	  $(IMAGE)
+
 image:
 	-mkdir -p $(BASE)/docker-cache
 	docker buildx use $(BUILDERNAME) || docker buildx create --name $(BUILDERNAME) --use

@@ -73,8 +73,13 @@ nav a {
     padding: 40px;
 }
 
-.image img {
-    max-width: 100%;
+#image {
+    width: 80vw;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
 }
 
 .description {
