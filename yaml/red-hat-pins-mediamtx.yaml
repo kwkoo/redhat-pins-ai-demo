@@ -22,10 +22,10 @@ spec:
         image: ghcr.io/kwkoo/rhpins
         imagePullPolicy: IfNotPresent
         env:
-        - name: VIDEO
+        - name: CAMERA
           value: rtsp://mediamtx:8554/mystream
         ports:
-        - containerPort: 5000
+        - containerPort: 8080
           name: http
         resources:
           limits:
@@ -39,7 +39,7 @@ metadata:
     app: rh-pins
 spec:
   ports:
-  - port: 5000
+  - port: 8080
     name: http
   selector:
     app: rh-pins

@@ -6,9 +6,9 @@ services:
     container_name: pins
     image: "ghcr.io/kwkoo/rhpins"
     ports:
-    - 8080:5000
+    - 8080:8080
     environment:
-    - VIDEO=rtsp://mediamtx:8554/mystream
+    - CAMERA=rtsp://mediamtx:8554/mystream
     depends_on:
     - ffmpeg
 

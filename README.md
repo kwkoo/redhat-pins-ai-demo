@@ -18,7 +18,7 @@ This will start 3 containers:
 
 01. `ffmpeg` - this streams the sample video (`container/video.mp4`) to `mediamtx`
 
-01. `pins` - this is the Red Hat Pins web application; it is configured to use `mediamtx` as a video source via the `VIDEO` environment variable
+01. `pins` - this is the Red Hat Pins web application; it is configured to use `mediamtx` as a video source via the `CAMERA` environment variable
 
 Once all 3 containers are up, access the pins with a web browser at <http://localhost:8080>
 

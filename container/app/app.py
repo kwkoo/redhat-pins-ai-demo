@@ -37,34 +37,37 @@ def detection_task(
     model = YOLO('best.pt')
     logging.info("done loading model")
 
+    cam = cv2.VideoCapture(camera_device)
+    retry_pause = False
+
     while continue_running.is_set():
+        result, frame = cam.read()
+        if not result:
+            print("Video source did not return a frame")
+            cam.open(camera_device)
+            if retry_pause:
+                time.sleep(2)
+            else:
+                retry_pause = True
+            continue
 
-        cam = cv2.VideoCapture(camera_device)
-        while not cam.isOpened() and continue_running.is_set():
-            logging.info("could not open camera, sleeping...")
-            time.sleep(1)
-        while cam.isOpened() and continue_running.is_set():
-            result, frame = cam.read()
-            if not result:
-                break
+        retry_pause = False
+        results = model(frame, conf=confidence)
+        if len(results) < 1:
+            continue
 
-            results = model(frame, conf=confidence)
-            if len(results) < 1:
-                continue
+        output_frame = results[0].plot()
 
-            output_frame = results[0].plot()
+        # convert image to base64-encoded JPEG
+        im_encoded = cv2.imencode('.jpg', output_frame)[1]
+        im_b64 = base64.b64encode(im_encoded.tobytes()).decode('ascii')
 
-            # convert image to base64-encoded JPEG
-            im_encoded = cv2.imencode('.jpg', output_frame)[1]
-            im_b64 = base64.b64encode(im_encoded.tobytes()).decode('ascii')
+        message = {
+            "image": im_b64
+        }
+        announcer.announce(format_sse(data=json.dumps(message), event="image", retry=retry))
 
-            message = {
-                "image": im_b64
-            }
-            announcer.announce(format_sse(data=json.dumps(message), event="image", retry=retry))
-
-        # we have hit the end of the video stream
-        cam.release()
+    cam.release()
 
 
 @app.route("/")
