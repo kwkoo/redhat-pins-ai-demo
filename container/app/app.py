@@ -20,6 +20,38 @@ class LogFilter(logging.Filter):
         return True
 logging.getLogger("werkzeug").addFilter(LogFilter())
 
+class LeakTracker:
+    max_leak_ids = 10
+    leak_ids = []
+    count = 0
+
+    def update(self, boxes):
+        if (boxes.id is None) or (boxes.cls is None):
+            return
+
+        cls = boxes.cls.numpy().astype(int)
+        ids = boxes.id.numpy().astype(int)
+        for idx, cl in enumerate(cls):
+            if cl != 1: # 1 refers to paint leaks
+                continue
+
+            leak_id = ids[idx]
+            known_id = False
+            for id in self.leak_ids:
+                if id == leak_id:
+                    known_id = True
+                    break
+
+            if known_id:
+                continue
+
+            # we found a new paint leak
+            self.count += + 1
+            print(f"paint leak id = {leak_id}")
+            self.leak_ids.append(leak_id)
+            if len(self.leak_ids) > self.max_leak_ids:
+                self.leak_ids.pop(0)
+
 app = Flask(__name__, static_url_path='')
 
 def stop_detection_task():
@@ -29,13 +61,13 @@ def stop_detection_task():
     logging.info("background thread exited cleanly")
 
 def detection_task(camera_device):
-    retry = 10
+    retry = 500
+    leak_tracker = LeakTracker()
+
     logging.info("loading model...")
     model = YOLO('best.pt')
     logging.info("done loading model")
 
-    max_paint_leak_ids = 10
-    paint_leak_ids = []
     total_paint_leaks = 0
 
     cam = cv2.VideoCapture(camera_device)
@@ -58,25 +90,8 @@ def detection_task(camera_device):
             continue
 
         result = results[0]
-        if result.boxes.id is not None:
-            cls = result.boxes.cls.numpy().astype(int)
-            ids = result.boxes.id.numpy().astype(int)
-            for idx, cl in enumerate(cls):
-                if cl == 1:
-                    leak_id = ids[idx]
-                    known_id = False
-                    for id in paint_leak_ids:
-                        if id == leak_id:
-                            known_id = True
-                            break
-                    if not known_id:
-                        total_paint_leaks = total_paint_leaks + 1
-                        print(f"paint leak id = {leak_id}")
-                        paint_leak_ids.append(leak_id)
-                        if len(paint_leak_ids) > max_paint_leak_ids:
-                            paint_leak_ids.pop(0)
-
-        output_frame = results[0].plot()
+        leak_tracker.update(result.boxes)
+        output_frame = result.plot()
 
         # convert image to base64-encoded JPEG
         im_encoded = cv2.imencode('.jpg', output_frame)[1]
@@ -84,7 +99,7 @@ def detection_task(camera_device):
 
         message = {
             "image": im_b64,
-            "leaks": total_paint_leaks
+            "leaks": leak_tracker.count
         }
         announcer.announce(format_sse(data=json.dumps(message), event="image", retry=retry))
 

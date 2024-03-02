@@ -24,7 +24,7 @@
       });
       evtSource.onerror = (e) => {
         sseErrors++;
-        if (sseErrors > 10) {
+        if (sseErrors > 50) {
           evtSource.close();
           alert("connection error threshold exceeded, terminating SSE event source");
         }
