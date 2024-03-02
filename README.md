@@ -83,6 +83,12 @@ To deploy the Red Hat Pins web application with mediamtx on OpenShift,
 		  --for=condition=Available \
 		  --timeout=600s
 
+01. Retrieve the Red Hat Pins route URL
+
+		PINS="http://$(oc get route/rh-pins -n $PROJ -o jsonpath='{.spec.host}')" \
+		&& \
+		echo "URL = $PINS"
+
 01. Stream the video from your local machine
 
 		docker run \
@@ -102,13 +108,7 @@ To deploy the Red Hat Pins web application with mediamtx on OpenShift,
 		    -f rtsp \
 		    rtsp://$MEDIAMTX:8554/mystream"
 
-01. Retrieve the Red Hat Pins route URL
-
-		PINS="http://$(oc get route/rh-pins -n $PROJ -o jsonpath='{.spec.host}')" \
-		&& \
-		echo "URL = $PINS"
-
-01. Access the Red Hat Pins web application with a web browser at the URL from the step above
+01. Access the Red Hat Pins web application with a web browser at the URL from the 2 steps above
 
 
 #### Troubleshooting
