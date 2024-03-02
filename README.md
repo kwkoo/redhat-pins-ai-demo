@@ -108,7 +108,7 @@ To deploy the Red Hat Pins web application with mediamtx on OpenShift,
 		    -f rtsp \
 		    rtsp://$MEDIAMTX:8554/mystream"
 
-01. Access the Red Hat Pins web application with a web browser at the URL from the 2 steps above
+01. Access the Red Hat Pins web application with a web browser at the URL from 2 steps above
 
 
 #### Troubleshooting
