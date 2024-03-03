@@ -75,7 +75,6 @@ def detection_task(camera_device, force_cpu):
             accel_device = "cuda"
         elif torch.backends.mps.is_available():
             logging.info("MPS is available")
-            torch.device("mps")
             accel_device = "mps"
         else:
             logging.info("CUDA and MPS are not available")
@@ -84,6 +83,7 @@ def detection_task(camera_device, force_cpu):
     model = YOLO('best.pt')
     logging.info("done loading model")
 
+    torch.device(accel_device)
     if accel_device != "cpu":
         logging.info(f"moving model to {accel_device}")
         model.to(accel_device)
