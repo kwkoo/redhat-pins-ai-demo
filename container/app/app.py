@@ -64,9 +64,24 @@ def detection_task(camera_device):
     retry = 500
     leak_tracker = LeakTracker()
 
+    accel_device = "cpu"
+    if torch.cuda.is_available():
+        logging.info("CUDA is available")
+        torch.cuda.set_device(0)
+        accel_device = "cuda"
+    elif torch.backends.mps.is_available():
+        logging.info("MPS is available")
+        torch.device("mps")
+        accel_device = "mps"
+    else:
+        logging.info("CUDA and MPS are not available")
+
     logging.info("loading model...")
     model = YOLO('best.pt')
     logging.info("done loading model")
+
+    if accel_device != "cpu":
+        model.to(accel_device)
 
     total_paint_leaks = 0
 
@@ -140,12 +155,6 @@ def listen():
 
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
-    if torch.cuda.is_available():
-        logging.info("CUDA is available")
-        torch.cuda.set_device(0)
-    else:
-        logging.info("CUDA is not available")
 
     camera_device = os.getenv('CAMERA', '/dev/video0')
 
