@@ -61,27 +61,31 @@ def stop_detection_task():
     background_thread.join()
     logging.info("background thread exited cleanly")
 
-def detection_task(camera_device):
+def detection_task(camera_device, force_cpu):
     retry = 500
     leak_tracker = LeakTracker()
 
     accel_device = "cpu"
-    if torch.cuda.is_available():
-        logging.info("CUDA is available")
-        torch.cuda.set_device(0)
-        accel_device = "cuda"
-    elif torch.backends.mps.is_available():
-        logging.info("MPS is available")
-        torch.device("mps")
-        accel_device = "mps"
+    if force_cpu:
+        logging.info("forcing CPU inferencing")
     else:
-        logging.info("CUDA and MPS are not available")
+        if torch.cuda.is_available():
+            logging.info("CUDA is available")
+            torch.cuda.set_device(0)
+            accel_device = "cuda"
+        elif torch.backends.mps.is_available():
+            logging.info("MPS is available")
+            torch.device("mps")
+            accel_device = "mps"
+        else:
+            logging.info("CUDA and MPS are not available")
 
     logging.info("loading model...")
     model = YOLO('best.pt')
     logging.info("done loading model")
 
     if accel_device != "cpu":
+        logging.info(f"moving model to {accel_device}")
         model.to(accel_device)
 
     total_paint_leaks = 0
@@ -163,6 +167,11 @@ if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
     camera_device = os.getenv('CAMERA', '/dev/video0')
+    force_cpu_lower = os.getenv('FORCE_CPU', 'no').lower()
+
+    force_cpu = False
+    if force_cpu_lower == '1' or force_cpu_lower == 'true' or force_cpu_lower == 'yes':
+        force_cpu = True
 
     announcer = MessageAnnouncer()
 
@@ -171,7 +180,7 @@ if __name__ == '__main__':
         continue_running.set()
         background_thread = threading.Thread(
             target=detection_task,
-            args=(camera_device,))
+            args=(camera_device,force_cpu))
         background_thread.start()
 
     app.run(host='0.0.0.0', port=8080)

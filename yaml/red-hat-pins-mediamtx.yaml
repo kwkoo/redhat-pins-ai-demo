@@ -24,6 +24,8 @@ spec:
         env:
         - name: CAMERA
           value: rtsp://mediamtx:8554/mystream
+        - name: FORCE_CPU
+          value: "false"
         ports:
         - containerPort: 8080
           name: http

@@ -4,7 +4,8 @@ This repo is forked from [here](https://github.com/redhat-ai-edge-pins-demo/redh
 
 The original repo only built images for ARM64 - this repo uses a different base image in order to also build for x86_64.
 
-This repo contains a git submodule (`container/yolov5`) so don't forget to clone with the `--recurse-submodules` option.
+If you are running the demo on a machine with a GPU and you want to perform inferencing on the CPU instead, set the `FORCE_CPU` environment variable to `"true"`, `"yes"`, or `"1"`.
+
 
 ## Demo
 
