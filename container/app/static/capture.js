@@ -6,6 +6,7 @@
     function startup() {
       photo = document.getElementById('photo');
       leaks = document.getElementById('leaks');
+      inference = document.getElementById('inference');
       clearphoto();
 
       const evtSource = new EventSource("/listen");
@@ -19,6 +20,11 @@
           }
           if (body.leaks != null) {
             leaks.innerText = body.leaks;
+          }
+          if (body.inference == null) {
+            inference.innerText = 'unknown';
+          } else {
+            inference.innerText = body.inference + ' ms';
           }
         }
       });

@@ -5,6 +5,7 @@ import os
 import threading
 import json
 import time
+import math
 
 import cv2 as cv2
 from flask import Flask, redirect, Response
@@ -105,6 +106,9 @@ def detection_task(camera_device):
             continue
 
         result = results[0]
+        inference_speed = None
+        if result.speed is not None:
+            inference_speed = result.speed.get('inference')
         leak_tracker.update(result.boxes)
         output_frame = result.plot()
 
@@ -116,6 +120,8 @@ def detection_task(camera_device):
             "image": im_b64,
             "leaks": leak_tracker.count
         }
+        if inference_speed is not None:
+            message['inference'] = math.ceil(inference_speed * 100) / 100
         announcer.announce(format_sse(data=json.dumps(message), event="image", retry=retry))
 
     cam.release()
