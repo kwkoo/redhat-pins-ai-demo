@@ -19,11 +19,11 @@ spec:
       - name: rh-pins
         image: ghcr.io/kwkoo/rhpins
         imagePullPolicy: IfNotPresent
-        #env:
+        env:
+        - name: FORCE_CPU
+          value: "false"
         #- name: CAMERA
         #  value: rtsp://0.tcp.ap.ngrok.io:19233/mystream
-        #- name: FORCE_CPU
-        #  value: "false"
         ports:
         - containerPort: 8080
           name: http
