@@ -105,7 +105,7 @@ def detection_task(camera_device, force_cpu):
             continue
 
         retry_pause = False
-        results = model.track(frame, persist=True)
+        results = model.track(frame, persist=True, device=accel_device)
         if len(results) < 1:
             continue
 
