@@ -20,10 +20,10 @@ spec:
         image: ghcr.io/kwkoo/rhpins
         imagePullPolicy: IfNotPresent
         env:
+        - name: CAMERA
+          value: video.mp4
         - name: FORCE_CPU
           value: "false"
-        #- name: CAMERA
-        #  value: rtsp://0.tcp.ap.ngrok.io:19233/mystream
         ports:
         - containerPort: 8080
           name: http
