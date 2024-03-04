@@ -83,7 +83,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mediamtx
-        image: bluenviron/mediamtx:latest-ffmpeg
+        image: docker.io/bluenviron/mediamtx:latest-ffmpeg
         imagePullPolicy: IfNotPresent
         env:
         - name: MTX_PROTOCOLS

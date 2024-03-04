@@ -14,7 +14,7 @@ services:
 
   mediamtx:
     container_name: mediamtx
-    image: "bluenviron/mediamtx:latest-ffmpeg"
+    image: "docker.io/bluenviron/mediamtx:latest-ffmpeg"
     ports:
     - 8554:8554
     environment:
@@ -22,7 +22,7 @@ services:
 
   ffmpeg:
     container_name: ffmpeg
-    image: "bluenviron/mediamtx:latest-ffmpeg"
+    image: "docker.io/bluenviron/mediamtx:latest-ffmpeg"
     entrypoint:
     - /bin/sh
     - "-c"

@@ -98,7 +98,7 @@ To deploy the Red Hat Pins web application with mediamtx on OpenShift,
 		  -it \
 		  -v ./container/video.mp4:/host/video.mp4 \
 		  --entrypoint "/bin/sh" \
-		  bluenviron/mediamtx:latest-ffmpeg \
+		  docker.io/bluenviron/mediamtx:latest-ffmpeg \
 		  -c \
 		  "ffmpeg \
 		    -re \
