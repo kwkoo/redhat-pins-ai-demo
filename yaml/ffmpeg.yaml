@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"mediamtx"}]'
+  labels:
+    app: ffmpeg
+  name: ffmpeg
+spec:
+  selector:
+    matchLabels:
+      app: ffmpeg
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ffmpeg
+    spec:
+      terminationGracePeriodSeconds: 10
+      initContainers:
+      - name: copy-video
+        image: ghcr.io/kwkoo/rhpins
+        command:
+        - cp
+        - /app/video.mp4
+        - /data/
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      containers:
+      - name: ffmpeg
+        image: docker.io/bluenviron/mediamtx:latest-ffmpeg
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - "-c"
+        - "until nc mediamtx 8554 < /dev/null; do sleep 5; done; ffmpeg -re -stream_loop -1 -i /data/video.mp4 -c copy -f rtsp rtsp://mediamtx:8554/mystream"
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        emptyDir: {}
