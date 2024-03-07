@@ -1,4 +1,4 @@
-IMAGE=ghcr.io/kwkoo/rhpins
+IMAGE=ghcr.io/kwkoo/rhpins:12.3.1
 BASE_IMAGE=nvcr.io/nvidia/cuda:12.3.1-devel-ubi9
 BUILDERNAME=multiarch-builder
 
