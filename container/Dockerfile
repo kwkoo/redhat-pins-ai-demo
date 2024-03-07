@@ -1,4 +1,5 @@
-FROM nvcr.io/nvidia/cuda:12.3.1-devel-ubi9
+ARG BASE_IMAGE=nvcr.io/nvidia/cuda:12.3.1-devel-ubi9
+FROM $BASE_IMAGE
 
 RUN \
   yum update -y \
