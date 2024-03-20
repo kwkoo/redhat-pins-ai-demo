@@ -137,36 +137,8 @@ To deploy the Red Hat Pins web application with mediamtx on OpenShift,
 
 ## Training
 
-If the training container image doesn't exist, create it with
+The model can be trained using the `train_redhat_pins.ipynb` notebook.
 
-	make image-training
+If you run it with the T4 GPU runtime on Google Colab, training should take less than 3 minutes.
 
-01. Deploy a training pod to OpenShift
-
-		oc apply -f ./yaml/training.yaml
-
-01. When the pod is running, copy the datasets up to the pod
-
-		tar -C dataset -cf - \
-		| \
-		oc rsh deploy/training tar -C /datasets -xvf -
-
-01. Get a shell in the pod and run the training command
-
-		oc rsh deploy/training
-
-		yolo detect train \
-		  data=./data.yaml \
-		  model=yolov8s.pt \
-		  epochs=10 \
-		  imgsz=1280 \
-		  batch=5 \
-		  device=0
-
-01. After the training has completed, the model can be found at `/datasets/runs/detect/train/weights/best.pt`
-
-01. If you have trouble copying the model file to your local computer with `oc cp`, try copying with `oc cp --retries=10`
-
-01. After the file has been copied to your local computer, try examining the contents with
-
-		unzip -l best.pt
+After training has completed, you can get the model at `./runs/detect/train/weights/best.pt`.
