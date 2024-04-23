@@ -1,5 +1,4 @@
-IMAGE=ghcr.io/kwkoo/rhpins:12.3.1
-BASE_IMAGE=nvcr.io/nvidia/cuda:12.3.1-devel-ubi9
+IMAGE=ghcr.io/kwkoo/rhpins:12.1.0
 BUILDERNAME=multiarch-builder
 
 BASE:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -34,7 +33,6 @@ image:
 	  --cache-to type=local,dest=$(BASE)/docker-cache,mode=max \
 	  --cache-from type=local,src=$(BASE)/docker-cache \
 	  --rm \
-	  --build-arg BASE_IMAGE=$(BASE_IMAGE) \
 	  -t $(IMAGE) \
 	  $(BASE)/container
 

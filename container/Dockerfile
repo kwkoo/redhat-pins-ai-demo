@@ -1,51 +1,64 @@
-ARG BASE_IMAGE=nvcr.io/nvidia/cuda:12.3.1-devel-ubi9
-FROM $BASE_IMAGE
+FROM nvcr.io/nvidia/cuda:12.1.0-devel-ubi8 AS builder
+
+RUN \
+  curl \
+      -Lo /tmp/miniconda.sh \
+      https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-`uname -p`.sh \
+  && \
+  bash /tmp/miniconda.sh -b -p /usr/local/miniconda \
+  && \
+  rm -f /tmp/miniconda.sh \
+  && \
+  . /usr/local/miniconda/etc/profile.d/conda.sh \
+  && \
+  conda create --name app python=3.11 -y \
+  && \
+  chown -R :0 /usr/local/miniconda \
+  && \
+  chmod 775 /usr/local/miniconda \
+  && \
+  chmod -R g=u /usr/local/miniconda
+
+RUN \
+  . /usr/local/miniconda/etc/profile.d/conda.sh \
+  && \
+  conda activate app \
+  && \
+  pip install --no-cache ultralytics flask lapx \
+  && \
+  chown -R :0 /usr/local/miniconda/envs \
+  && \
+  chmod -R g=u /usr/local/miniconda/envs
+
+
+FROM nvcr.io/nvidia/cuda:12.1.0-runtime-ubi8
+
+ENV HOME=/root
 
 RUN \
   yum update -y \
   && \
-  yum install -y python3-pip git mesa-libGL libjpeg libpng libjpeg-devel libpng-devel python3-devel \
+  yum install -y mesa-libGL \
   && \
-  yum clean all
+  yum clean all \
+  && \
+  echo '. /usr/local/miniconda/etc/profile.d/conda.sh' >> $HOME/.bashrc \
+  && \
+  echo 'conda activate app' >> $HOME/.bashrc
 
-RUN \
-  git clone https://github.com/ultralytics/ultralytics.git /ultralytics \
-  && \
-  cd /ultralytics \
-  && \
-  pip3 install . \
-  && \
-  rm -rf /root/.cache \
-  && \
-  chown -R :0 /ultralytics \
-  && \
-  chmod -R g=u /ultralytics
+COPY --from=builder --chown=:0 /usr/local/miniconda /usr/local/miniconda
 
 WORKDIR /app
 EXPOSE 8080
+CMD ["bash", "-l", "-c", "python ./app.py"]
+
+COPY ./video.mp4 /app/
+COPY ./best.pt /app/
+COPY ./app/ /app
 
 RUN \
-  pip3 install flask lapx \
+  chmod 775 /root \
   && \
-  rm -rf /root/.cache
-
-CMD ["python3", "./app.py"]
-
-ENV \
-  LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/lib/python3.9/site-packages/nvidia/cudnn/lib \
-  CUDA_DIR=/usr/local/cuda \
-  CUDA_PATH=/usr/local/cuda \
-  CUDA_INSTALL_DIR=/usr/local/cuda \
-  CUDA_HOME=/usr/local/cuda \
-  NVIDIA_VISIBLE_DEVICES=all \
-  HOME=/app \
-  CAMERA=/dev/video0
-
-COPY video.mp4 /app/
-COPY best.pt /app/
-COPY app/ /app
-
-RUN \
-  chown -R :0 /app \
+  chown -R :0 /app /root \
   && \
-  chmod -R g=u /app
+  chmod -R g=u /app /root

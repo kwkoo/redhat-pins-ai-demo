@@ -17,7 +17,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: rh-pins
-        image: ghcr.io/kwkoo/rhpins
+        image: ghcr.io/kwkoo/rhpins:12.1.0
         imagePullPolicy: IfNotPresent
         env:
         - name: CAMERA

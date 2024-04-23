@@ -19,7 +19,7 @@ spec:
       terminationGracePeriodSeconds: 10
       initContainers:
       - name: copy-video
-        image: ghcr.io/kwkoo/rhpins
+        image: ghcr.io/kwkoo/rhpins:12.1.0
         command:
         - cp
         - /app/video.mp4

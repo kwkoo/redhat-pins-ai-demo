@@ -19,8 +19,8 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: rh-pins
-        image: ghcr.io/kwkoo/rhpins
-        imagePullPolicy: IfNotPresent
+        image: ghcr.io/kwkoo/rhpins:12.1.0
+        imagePullPolicy: Always
         env:
         - name: CAMERA
           value: rtsp://mediamtx:8554/mystream
